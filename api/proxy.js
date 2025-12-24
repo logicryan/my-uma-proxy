@@ -14,10 +14,11 @@ export default async function handler(req, res) {
     return;
   }
 
-  const GRAPH_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/uma-protocol/optimistic-oracle-v3-polygon';
+  // 3. 使用 Goldsky 的最新公开节点 (原 The Graph 节点已废弃)
+  const GRAPH_ENDPOINT = '[https://api.goldsky.com/api/public/project_clus2fndawbcc01w31192938i/subgraphs/polygon-optimistic-oracle-v3/1/gn](https://api.goldsky.com/api/public/project_clus2fndawbcc01w31192938i/subgraphs/polygon-optimistic-oracle-v3/1/gn)';
 
   try {
-    // 3. 转发请求到 The Graph
+    // 4. 转发请求
     const { query } = req.body;
     const response = await fetch(GRAPH_ENDPOINT, {
       method: 'POST',
@@ -26,8 +27,15 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    
+    // 检查上游是否返回错误
+    if (data.errors) {
+       console.error('Graph API Errors:', data.errors);
+    }
+    
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Proxy Error' });
+    console.error('Proxy Catch Error:', error);
+    res.status(500).json({ error: 'Proxy Error', details: error.message });
   }
 }
