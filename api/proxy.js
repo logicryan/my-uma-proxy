@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const GRAPH_ENDPOINT = '[https://api.thegraph.com/subgraphs/name/uma-protocol/optimistic-oracle-v3-polygon](https://api.thegraph.com/subgraphs/name/uma-protocol/optimistic-oracle-v3-polygon)';
+  const GRAPH_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/uma-protocol/optimistic-oracle-v3-polygon';
 
   try {
     // 3. 转发请求到 The Graph
