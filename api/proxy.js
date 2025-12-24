@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // 1. 设置允许跨域访问 (CORS)
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -8,17 +7,15 @@ export default async function handler(req, res) {
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
 
-  // 2. 如果是浏览器预检请求，直接通过
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
-  // 3. 使用 Goldsky 的最新公开节点 (原 The Graph 节点已废弃)
-  const GRAPH_ENDPOINT = '[https://api.goldsky.com/api/public/project_clus2fndawbcc01w31192938i/subgraphs/polygon-optimistic-oracle-v3/1/gn](https://api.goldsky.com/api/public/project_clus2fndawbcc01w31192938i/subgraphs/polygon-optimistic-oracle-v3/1/gn)';
+  // 🔴 重点检查这一行：只有引号，没有方括号 []
+  const GRAPH_ENDPOINT = 'https://api.goldsky.com/api/public/project_clus2fndawbcc01w31192938i/subgraphs/polygon-optimistic-oracle-v3/1/gn';
 
   try {
-    // 4. 转发请求
     const { query } = req.body;
     const response = await fetch(GRAPH_ENDPOINT, {
       method: 'POST',
@@ -26,13 +23,14 @@ export default async function handler(req, res) {
       body: JSON.stringify({ query }),
     });
 
-    const data = await response.json();
-    
-    // 检查上游是否返回错误
-    if (data.errors) {
-       console.error('Graph API Errors:', data.errors);
+    if (!response.ok) {
+      const text = await response.text();
+      // 这里会打印出具体的错误，方便调试
+      console.error('Upstream Error:', response.status, text);
+      return res.status(response.status).json({ error: 'Upstream Error', details: text });
     }
-    
+
+    const data = await response.json();
     res.status(200).json(data);
   } catch (error) {
     console.error('Proxy Catch Error:', error);
